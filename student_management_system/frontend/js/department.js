@@ -64,15 +64,17 @@ const DepartmentModule = {
             const response = await App.Http.get(`/department/page/${this.pageSize}/${page}`);
             
             if (response && response.status_code === 200) {
-                this.currentData = response.data || [];
-                this.totalItems = this.currentData.length >= this.pageSize ? 
-                    this.currentData.length + (page - 1) * this.pageSize + 1 : 
-                    (page - 1) * this.pageSize + this.currentData.length;
+                // 处理后端返回的分页数据结构 {total, data}
+                const result = response.data || {};
+                this.currentData = result.data || [];
+                this.totalItems = result.total || 0;
                 this.renderTable();
                 this.renderPagination();
             } else {
                 this.currentData = [];
+                this.totalItems = 0;
                 this.renderTable();
+                document.getElementById('departmentPagination').innerHTML = '';
             }
         } catch (error) {
             console.error('加载部门数据失败:', error);
