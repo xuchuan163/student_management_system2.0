@@ -67,7 +67,7 @@ async def query_department_page(request: Request, dept_name: str | None = Query(
     return {'message': '查询失败！', 'status_code': 501}
 
 
-@department_router.get('/query_parent', summary='查询父部门')
+@department_router.get("/query_parent", summary='查询父部门')
 @auth(allow_role=["admin", "employee"])
 async def query_parent(request: Request, parent_id: int = Query(0, description="父节点，不传默认查顶级 0"),
                        db=Depends(get_db)):
@@ -78,3 +78,18 @@ async def query_parent(request: Request, parent_id: int = Query(0, description="
         logger.error(e)
         raise HTTPException(status_code=500, detail='查询失败' + str(e))
     return {'message': '查询失败！', 'status_code': 501}
+
+
+@department_router.get("/query_by_id", summary='根据部门ID查询部门信息')
+@auth(allow_role=["admin", "employee"])
+async def query_department_by_id(request: Request, department_id: int = Query(..., description="部门ID"),
+                                 db=Depends(get_db)):
+    try:
+        dep_obj = department.query_department_by_id(db, department_id)
+        if dep_obj:
+            return {'message': '查询成功！', 'status_code': 200, 'data': dep_obj}
+        else:
+            return {'message': '未找到该部门', 'status_code': 404}
+    except Exception as e:
+        logger.error(e)
+        raise HTTPException(status_code=500, detail='查询失败' + str(e))

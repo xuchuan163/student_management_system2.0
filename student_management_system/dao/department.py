@@ -92,3 +92,17 @@ def query_parent_dept(db: Session, parent_id: int) -> list:
     departments = db.query(Department).filter(Department.del_flag != 'Y', Department.parent_id == parent_id).all()
     print(departments)
     return departments
+
+
+def query_department_by_id(db: Session, department_id: int):
+    '''
+    根据部门ID查询单个部门信息
+    :param department_id: int
+    :param db: Session
+    :return: Department object or None
+    '''
+    department = db.query(Department).filter(
+        Department.department_id == department_id,
+        Department.del_flag != 'Y'
+    ).first()
+    return department

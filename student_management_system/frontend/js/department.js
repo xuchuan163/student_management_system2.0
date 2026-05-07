@@ -120,20 +120,48 @@ const DepartmentModule = {
      * 搜索
      */
     async search() {
+        const deptId = document.getElementById('searchDeptId').value.trim();
         const deptName = document.getElementById('searchDeptName').value.trim();
         
         try {
-            const response = await App.Http.get(`/department/page/${this.pageSize}/1`, {
-                dept_name: deptName
-            });
-            
-            if (response && response.status_code === 200) {
-                this.currentData = response.data || [];
-                this.totalItems = this.currentData.length;
-                this.renderTable();
-                document.getElementById('departmentPagination').innerHTML = '';
+            // 如果提供了部门ID，优先使用ID查询
+            if (deptId) {
+                const response = await App.Http.get('/department/query_by_id', {
+                    department_id: parseInt(deptId)
+                });
+
+                if (response && response.status_code === 200) {
+                    this.currentData = response.data ? [response.data] : [];
+                    this.totalItems = this.currentData.length;
+                    this.renderTable();
+                    document.getElementById('departmentPagination').innerHTML = '';
+                } else {
+                    App.Utils.showMessage(response.message || '未找到该部门', 'error');
+                    this.currentData = [];
+                    this.renderTable();
+                    document.getElementById('departmentPagination').innerHTML = '';
+                }
+            } else if (deptName) {
+                // 否则使用名称搜索
+                const response = await App.Http.get(`/department/page/${this.pageSize}/1`, {
+                    dept_name: deptName
+                });
+
+                if (response && response.status_code === 200) {
+                    const result = response.data || {};
+                    this.currentData = result.data || [];
+                    this.totalItems = result.total || 0;
+                    this.renderTable();
+                    document.getElementById('departmentPagination').innerHTML = '';
+                } else {
+                    App.Utils.showMessage(response.message || '搜索失败', 'error');
+                    this.currentData = [];
+                    this.renderTable();
+                    document.getElementById('departmentPagination').innerHTML = '';
+                }
             } else {
-                App.Utils.showMessage(response.message || '搜索失败', 'error');
+                // 没有任何搜索条件时重新加载所有数据
+                this.loadData();
             }
         } catch (error) {
             console.error('搜索失败:', error);
@@ -145,6 +173,7 @@ const DepartmentModule = {
      * 重置搜索
      */
     resetSearch() {
+        document.getElementById('searchDeptId').value = '';
         document.getElementById('searchDeptName').value = '';
         this.loadData();
     },
