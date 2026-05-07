@@ -38,6 +38,7 @@ const DepartmentModule = {
                 <div class="card-body">
                     <!-- 搜索栏 -->
                     <div class="search-bar">
+                        <input type="text" id="searchDeptId" placeholder="输入部门编号搜索">
                         <input type="text" id="searchDeptName" placeholder="输入部门名称搜索">
                         <button class="btn btn-primary" onclick="DepartmentModule.search()">搜索</button>
                         <button class="btn btn-default" onclick="DepartmentModule.resetSearch()">重置</button>
