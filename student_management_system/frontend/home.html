@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生管理系统</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>学生管理系统</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a class="nav-item active" data-route="student" href="#student">
+                    <span class="nav-icon">👤</span> 学生管理
+                </a>
+                <a class="nav-item" data-route="teacher" href="#teacher">
+                    <span class="nav-icon">👨‍🏫</span> 教师管理
+                </a>
+                <a class="nav-item" data-route="class" href="#class">
+                    <span class="nav-icon">📚</span> 班级管理
+                </a>
+                <a class="nav-item" data-route="score" href="#score">
+                    <span class="nav-icon">📊</span> 成绩管理
+                </a>
+                <a class="nav-item" data-route="employment" href="#employment">
+                    <span class="nav-icon">💼</span> 就业管理
+                </a>
+                <a class="nav-item" data-route="department" href="#department">
+                    <span class="nav-icon">🏢</span> 部门管理
+                </a>
+                <a class="nav-item" data-route="consultant" href="#consultant">
+                    <span class="nav-icon">🤝</span> 顾问管理
+                </a>
+                <a class="nav-item" data-route="statistics" href="#statistics">
+                    <span class="nav-icon">📈</span> 统计分析
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">👤</div>
+                    <div>
+                        <div class="user-name" id="currentUsername">管理员</div>
+                        <div class="user-role" id="currentRole">admin</div>
+                    </div>
+                </div>
+                <button class="logout-btn" id="logoutBtn">退出登录</button>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1 id="pageTitle">学生管理</h1>
+            </header>
+            <div class="content-body" id="contentBody">
+                <!-- 动态内容将在这里渲染 -->
+            </div>
+        </main>
+    </div>
+
+    <!-- 加载核心脚本 -->
+    <script src="js/app.js"></script>
+    <script src="js/login.js"></script>
+    <script src="js/student.js"></script>
+    <script src="js/teacher.js"></script>
+    <script src="js/classInfo.js"></script>
+    <script src="js/score.js"></script>
+    <script src="js/employment.js"></script>
+    <script src="js/department.js"></script>
+    <script src="js/consultant.js"></script>
+    <script src="js/statistics.js"></script>
+    
+    <script>
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 通过专用接口验证登录状态（Cookie 是 httponly 的，JS 无法直接读取）
+            let authData = null;
+            try {
+                const res = await fetch('/api/check_auth', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                authData = await res.json();
+                if (!authData.authenticated) {
+                    // 未登录或 Token 过期，跳转到登录页
+                    window.location.href = '/frontend/index.html';
+                    return;
+                }
+            } catch (e) {
+                window.location.href = '/frontend/index.html';
+                return;
+            }
+
+            // 显示当前用户信息（优先从接口获取角色，其次从 sessionStorage）
+            const username = sessionStorage.getItem('username') || '管理员';
+            const role = authData.role || sessionStorage.getItem('role') || 'admin';
+            // 更新 sessionStorage 中的角色（确保准确）
+            sessionStorage.setItem('role', role);
+            document.getElementById('currentUsername').textContent = username;
+            document.getElementById('currentRole').textContent = role;
+
+            // 初始化路由
+            App.Router.init();
+            
+            // 如果没有hash，默认跳转到学生管理
+            if (!window.location.hash) {
+                App.Router.navigate('student');
+            } else {
+                App.Router.handle();
+            }
+        });
+    </script>
+</body>
+</html>
